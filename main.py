@@ -8,7 +8,7 @@ Original file is located at
 """
 
 !pip install fastapi uvicorn nest_asyncio
-!pip freeze > requirements.txt
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 import nest_asyncio
