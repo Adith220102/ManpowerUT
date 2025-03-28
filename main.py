@@ -7,7 +7,8 @@ Original file is located at
     https://colab.research.google.com/drive/1V_nhngSdFiZn97SYhW9igxInwHmBPXtr
 """
 
-!pip install fastapi uvicorn nest_asyncio
+import os
+os.system("pip install fastapi uvicorn nest_asyncio")
 
 from fastapi import FastAPI
 from pydantic import BaseModel
