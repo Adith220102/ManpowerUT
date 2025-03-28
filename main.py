@@ -20,6 +20,25 @@ facility_constants = {
     "Mumbai_KurlaWest_R": 0.075,
     "Mumbai_AshokNagar_R": 0.067,
     "Coimbatore_Pudhupalayam_R": 0.167,
+    "Hyderabad_Medchal_R": 0.167,
+    "Lucknow_HindNagar_R": 0.167,
+    "Agra_Tajganj_R": 0.067,
+    "Bangalore_Nelamangla1_R": 0.167,
+    "Panipat_Diwana_R": 0.067,
+    "Guwahati_Kaikchi_R": 0.167,
+    "Meerut_Panchlikhurd_R": 0.067,
+    "Surat_Brpc": 0.05,
+    "Indore_LasudiaMori_R": 0.1,
+    "Gurgaon_Bhorakalan_R": 0.167,
+    "Delhi_MundkaIndustArea_R": 0.05,
+    "Delhi_UdhyogNgr_R": 0.067,
+    "Delhi_MayapuriPhase1_R": 0.067,
+    "Bhiwandi_Lonad_R": 0.167,
+    "Gurgaon_PalamVihar_R": 0.167,
+    "Noida_Sector63D_R": 0.067,
+    "Faridabad_MathuraRoad1_R": 0.067,
+    "Delhi_Ghazipur_R": 0.067,
+    "Delhi_Shahdara_R": 0.067
 }
 
 class FacilityInput(BaseModel):
