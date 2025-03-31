@@ -57,7 +57,7 @@ async def calculate_mandays(data: FacilityInput):
     setup_time = data.touchpoints * setup_time_per_touchpoint
     scanning_time = data.dispatch_load / 600
     total_time = setup_time + scanning_time
-    mandays = round(total_time / 3.5, 2)
+    mandays = round(total_time / 3.5, 0)
 
     response = {
         "processing_time": round(total_time, 2),
@@ -65,7 +65,7 @@ async def calculate_mandays(data: FacilityInput):
     }
 
     if mandays < data.old_mandays:
-        response["reduction"] = round(data.old_mandays - mandays, 2)
+        response["reduction"] = round(data.old_mandays - mandays, 0)
     else:
         response["message"] = "No need to change."
 
