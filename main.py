@@ -73,8 +73,11 @@ async def calculate_mandays(data: FacilityInput):
 
 nest_asyncio.apply()
 uvicorn.run(app, host="0.0.0.0", port=10000)"""
-import gradio as gr
+from fastapi import FastAPI
+from pydantic import BaseModel
 import requests
+
+app = FastAPI()
 
 facility_constants = {
     "Mumbai_KurlaWest_R": 0.075,
@@ -101,57 +104,37 @@ facility_constants = {
     "Delhi_Shahdara_R": 0.067
 }
 
-def calculate_mandays(facility_name, dispatch_load, touchpoints, old_mandays):
-    if not facility_name or dispatch_load is None or touchpoints is None or old_mandays is None:
-        return "⚠️ Please enter all required inputs."
-    
-    setup_time_per_touchpoint = facility_constants.get(facility_name, 0)
-    setup_time = touchpoints * setup_time_per_touchpoint
-    scanning_time = dispatch_load / 600
+class FacilityInput(BaseModel):
+    facility_name: str
+    dispatch_load: int
+    touchpoints: int
+    old_mandays: float
+
+@app.post("/calculate/")
+async def calculate_mandays(data: FacilityInput):
+    if data.facility_name not in facility_constants:
+        return {"error": "Invalid facility name"}
+
+    setup_time_per_touchpoint = facility_constants[data.facility_name]
+    setup_time = data.touchpoints * setup_time_per_touchpoint
+    scanning_time = data.dispatch_load / 600
     total_time = setup_time + scanning_time
     mandays = round(total_time / 3.5, 2)
-    
-    result = f"Processing Time: {total_time:.2f} hours\nMandays Required: {mandays}"
-    
-    if mandays < old_mandays:
-        reduction = old_mandays - mandays
-        result += f"\n✅ Reduction in mandays: {reduction:.2f}"
+
+    response = {
+        "processing_time": round(total_time, 2),
+        "mandays_required": mandays,
+    }
+
+    if mandays < data.old_mandays:
+        response["reduction"] = round(data.old_mandays - mandays, 2)
     else:
-        result += "\n🔹 No need to change."
-    
-    return result
+        response["message"] = "No need to change."
 
+    return response
+
+@app.get("/")
 def check_api_status():
-    api_url = "https://your-render-service-url.onrender.com"  # Update with actual Render API URL
-    try:
-        response = requests.get(api_url)
-        if response.status_code == 200:
-            return "✅ API is running"
-        else:
-            return "❌ API is NOT running"
-    except:
-        return "❌ API is NOT reachable"
+    return {"status": "API is running"}
 
-facilities = list(facility_constants.keys())
-
-iface = gr.Interface(
-    fn=calculate_mandays,
-    inputs=[
-        gr.Dropdown(choices=facilities, label="Select Facility"),
-        gr.Number(label="Enter Dispatch Load"),
-        gr.Number(label="Enter Number of Touchpoints"),
-        gr.Number(label="Enter Previous Mandays")
-    ],
-    outputs="text",
-    title="Mandays Calculator",
-    description="Select a facility, enter dispatch details, and get the mandays required."
-)
-
-def main():
-    api_status = check_api_status()
-    print(api_status)
-    iface.launch(server_name="0.0.0.0", server_port=10000)
-
-if __name__ == "__main__":
-    main()
-
+# Run FastAPI with Uvicorn in Render (this will be set in Render's Start Command)
