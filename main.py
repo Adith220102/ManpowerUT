@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1V_nhngSdFiZn97SYhW9igxInwHmBPXtr
 """
 
-import os
+"""import os
 os.system("pip install fastapi uvicorn nest_asyncio")
 
 from fastapi import FastAPI
@@ -72,4 +72,86 @@ async def calculate_mandays(data: FacilityInput):
     return response
 
 nest_asyncio.apply()
-uvicorn.run(app, host="0.0.0.0", port=7860)
+uvicorn.run(app, host="0.0.0.0", port=10000)"""
+import gradio as gr
+import requests
+
+facility_constants = {
+    "Mumbai_KurlaWest_R": 0.075,
+    "Mumbai_AshokNagar_R": 0.067,
+    "Coimbatore_Pudhupalayam_R": 0.167,
+    "Hyderabad_Medchal_R": 0.167,
+    "Lucknow_HindNagar_R": 0.167,
+    "Agra_Tajganj_R": 0.067,
+    "Bangalore_Nelamangla1_R": 0.167,
+    "Panipat_Diwana_R": 0.067,
+    "Guwahati_Kaikchi_R": 0.167,
+    "Meerut_Panchlikhurd_R": 0.067,
+    "Surat_Brpc": 0.05,
+    "Indore_LasudiaMori_R": 0.1,
+    "Gurgaon_Bhorakalan_R": 0.167,
+    "Delhi_MundkaIndustArea_R": 0.05,
+    "Delhi_UdhyogNgr_R": 0.067,
+    "Delhi_MayapuriPhase1_R": 0.067,
+    "Bhiwandi_Lonad_R": 0.167,
+    "Gurgaon_PalamVihar_R": 0.167,
+    "Noida_Sector63D_R": 0.067,
+    "Faridabad_MathuraRoad1_R": 0.067,
+    "Delhi_Ghazipur_R": 0.067,
+    "Delhi_Shahdara_R": 0.067
+}
+
+def calculate_mandays(facility_name, dispatch_load, touchpoints, old_mandays):
+    if not facility_name or dispatch_load is None or touchpoints is None or old_mandays is None:
+        return "⚠️ Please enter all required inputs."
+    
+    setup_time_per_touchpoint = facility_constants.get(facility_name, 0)
+    setup_time = touchpoints * setup_time_per_touchpoint
+    scanning_time = dispatch_load / 600
+    total_time = setup_time + scanning_time
+    mandays = round(total_time / 3.5, 2)
+    
+    result = f"Processing Time: {total_time:.2f} hours\nMandays Required: {mandays}"
+    
+    if mandays < old_mandays:
+        reduction = old_mandays - mandays
+        result += f"\n✅ Reduction in mandays: {reduction:.2f}"
+    else:
+        result += "\n🔹 No need to change."
+    
+    return result
+
+def check_api_status():
+    api_url = "https://your-render-service-url.onrender.com"  # Update with actual Render API URL
+    try:
+        response = requests.get(api_url)
+        if response.status_code == 200:
+            return "✅ API is running"
+        else:
+            return "❌ API is NOT running"
+    except:
+        return "❌ API is NOT reachable"
+
+facilities = list(facility_constants.keys())
+
+iface = gr.Interface(
+    fn=calculate_mandays,
+    inputs=[
+        gr.Dropdown(choices=facilities, label="Select Facility"),
+        gr.Number(label="Enter Dispatch Load"),
+        gr.Number(label="Enter Number of Touchpoints"),
+        gr.Number(label="Enter Previous Mandays")
+    ],
+    outputs="text",
+    title="Mandays Calculator",
+    description="Select a facility, enter dispatch details, and get the mandays required."
+)
+
+def main():
+    api_status = check_api_status()
+    print(api_status)
+    iface.launch(server_name="0.0.0.0", server_port=10000)
+
+if __name__ == "__main__":
+    main()
+
